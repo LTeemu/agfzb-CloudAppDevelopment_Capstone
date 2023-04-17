@@ -8,27 +8,45 @@
 </head>
 <body>
     <div class="container">
-        <h1>Sign Up</h1>
-        <form method='post'>
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" class="form-control" id="username" placeholder="Enter username">
-            </div>
-            <div class="form-group">
-                <label for="firstname">First Name</label>
-                <input type="text" class="form-control" id="firstname" placeholder="Enter first name">
-            </div>
-            <div class="form-group">
-                <label for="lastname">Last Name</label>
-                <input type="text" class="form-control" id="lastname" placeholder="Enter last name">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Enter password">
-            </div>
-            <button type="submit" class="btn btn-primary">Sign Up</button>
-        </form>
+        <h1>Sign Up</h1>       
+            <form action="{% url 'djangoapp:registration' %}" method='post'>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    <input type="text" class="form-control" name="{{ form.username.html_name }}" id="{{ form.username.auto_id }}" placeholder="Enter username" value="{{ form.username.value|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                    <input type="text" class="form-control" name="{{ form.first_name.html_name }}" id="{{ form.first_name.auto_id }}" placeholder="Enter first name" value="{{ form.first_name.value|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                    <input type="text" class="form-control" name="{{ form.last_name.html_name }}" id="{{ form.last_name.auto_id }}" placeholder="Enter last name" value="{{ form.last_name.value|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.password1.id_for_label }}">Password</label>
+                    <input type="password" class="form-control" name="{{ form.password1.html_name }}" id="{{ form.password1.auto_id }}" placeholder="Enter password">
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                    <input type="password" class="form-control" name="{{ form.password2.html_name }}" id="{{ form.password2.auto_id }}" placeholder="Re-type password">
+                </div>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <ul>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </form>
     </div>
 </body>
 </html>

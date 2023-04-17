@@ -1,3 +1,5 @@
+import logging
+import json
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
@@ -5,15 +7,16 @@ from django.shortcuts import get_object_or_404, render, redirect
 # from .models import related models
 # from .restapis import related methods
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from datetime import datetime
-import logging
-import json
+
+
+from .forms import CustomUserCreationForm 
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+# Custom registration form
 
 # Create your views here.
 # Create an `about` view to render a static about page
@@ -50,7 +53,7 @@ def registration(request):
     if request.method == 'GET':
         return render(request, 'djangoapp/registration.html', context)
     elif request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
             username = form.cleaned_data.get('username')
@@ -59,6 +62,7 @@ def registration(request):
             login(request, user)
             return redirect('djangoapp:index')
         else:
+            print(form.errors)
             context['form'] = form
             return render(request, 'djangoapp/registration.html', context)
 
