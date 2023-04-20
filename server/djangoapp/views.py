@@ -6,7 +6,6 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
-# from .models import related models
 from .restapis import get_dealers_from_cf, get_dealer_reviews_from_cf
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
@@ -14,6 +13,8 @@ from datetime import datetime
 from .forms import CustomUserCreationForm, ReviewForm
 from urllib.parse import urlencode
 from django.views.decorators.http import require_http_methods
+import uuid
+from .models import CarMake
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -70,9 +71,7 @@ def logout_view(request):
 
 def registration(request):
     context = {}
-    if request.method == 'GET':
-        return render(request, 'djangoapp/registration.html', context)
-    elif request.method == 'POST':
+    if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
@@ -85,7 +84,8 @@ def registration(request):
             print(form.errors)
             context['form'] = form
             return render(request, 'djangoapp/registration.html', context)
-
+    else:
+        return render(request, 'djangoapp/registration.html', context)
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 
 
@@ -134,7 +134,7 @@ def get_dealerships_by_dealerId(request, dealerId):
 @require_http_methods(["GET"])
 def get_reviews_by_dealerId(request, dealerId):
     if dealerId:
-        context = {}
+        context = {'dealerId': dealerId}
         query_string = urlencode({'dealerId': dealerId})
         url = f"{GET_REVIEWS_URL}?{query_string}"
         kwargs = {'url': url, 'COUCH_URL': COUCH_URL,
@@ -147,33 +147,49 @@ def get_reviews_by_dealerId(request, dealerId):
 # Create a `add_review` view to submit a review
 
 
-def add_review(request):
+def add_review(request, dealerId):
+    context = {'dealerId': dealerId}
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
-            purchase_date = form.cleaned_data['purchase_date']
-            if purchase_date:
+
+            if form.cleaned_data['purchase']:
+                purchase_date = form.cleaned_data['purchase_date']
                 form.cleaned_data['purchase_date'] = purchase_date.strftime(
                     '%d/%m/%Y')
+                car = form.cleaned_data['car']
+                print(f"car vars {vars(car)}")
+                form.cleaned_data['car_make'] = car.make.name
+                form.cleaned_data['car_model'] = car.name
+                form.cleaned_data['car_year'] = car.year.year
+                del form.cleaned_data['car']
             print(f"form post data: {form.cleaned_data}")
             data = {
                 'COUCH_URL': COUCH_URL,
                 'IAM_API_KEY': IAM_API_KEY,
-                'dealerId': form.cleaned_data['dealership'],
+                'dealerId': form.cleaned_data['id'],
                 'review': form.cleaned_data
             }
             response = requests.post(POST_REVIEW_URL, json=data)
             print(f"response post: {response.json()}")
             print(f"response status: {response}")
             if response.status_code == 201:
-                return redirect('djangoapp:reviews_id',
-                                dealerId=form.cleaned_data['dealership'])
+                return redirect('djangoapp:reviews_id', dealerId)
         else:
+            print(f'post invalid with values {form.cleaned_data}')
             # Handle form validation errors here
             for field, errors in form.errors.items():
                 for error in errors:
                     print(f"Error in {field}: {error}")
     else:
-        form = ReviewForm()
-
-    return render(request, 'djangoapp/add_review.html', {'form': form})
+        uuid_str_without_hyphens = str(uuid.uuid4()).replace('-', '')
+        uuid_int = int(uuid_str_without_hyphens, 16)
+        context['form'] = ReviewForm(
+            initial={
+                'dealership': dealerId,
+                'name': ' '.join([request.user.first_name, request.user.last_name]),
+                'id': uuid_int
+            }
+        )
+        print(f"Context from view {context['form'].initial}")
+        return render(request, 'djangoapp/add_review.html', context)

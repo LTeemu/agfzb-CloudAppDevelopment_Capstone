@@ -7,9 +7,12 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <link href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css" rel="stylesheet" />
     <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="extensions/filter-control/bootstrap-table-filter-control.css" />
+    <script src="extensions/filter-control/bootstrap-table-filter-control.js"></script>
+    <link href="https://unpkg.com/bootstrap-table@1.21.4/dist/bootstrap-table.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/bootstrap-table@1.21.4/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.21.4/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
   </head>
 
   <body>
@@ -59,34 +62,43 @@
     <p>Dealers by state - root/djangoapp/dealers/(state)</p>
     <p>Add review - root/djangoapp/dealers/reviews/add/</p>
     {% endif %} {% if dealerships %}
-    <table>
-      <tr>
-        <th>Address</th>
-        <th>City</th>
-        <th>Full Name</th>
-        <th>ID</th>
-        <th>Latitude</th>
-        <th>Longitude</th>
-        <th>Short Name</th>
-        <th>State Abbreviation</th>
-        <th>State</th>
-        <th>Zip Code</th>
-      </tr>
-      {% for dealer in dealerships %}
-      <tr>
-        <td>{{ dealer.address }}</td>
-        <td>{{ dealer.city }}</td>
-        <td>{{ dealer.full_name }}</td>
-        <td>{{ dealer.id }}</td>
-        <td>{{ dealer.lat }}</td>
-        <td>{{ dealer.long }}</td>
-        <td>{{ dealer.short_name }}</td>
-        <td>{{ dealer.st }}</td>
-        <td>{{ dealer.state }}</td>
-        <td>{{ dealer.zip }}</td>
-      </tr>
-      {% endfor %}
+    <table class="table" id="table" data-filter-control="true">
+      <thead>
+        <tr>
+          <th>Address</th>
+          <th>City</th>
+          <th>Full Name</th>
+          <th>ID</th>
+          <th>Latitude</th>
+          <th>Longitude</th>
+          <th>Short Name</th>
+          <th>Zip Code</th>
+          <th>State</th>
+          <th data-field="st" data-filter-control="select">State Abbreviation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dealer in dealerships %}
+        <tr>
+          <td>{{ dealer.address }}</td>
+          <td>{{ dealer.city }}</td>
+          <td><a href="{% url 'djangoapp:reviews_id' dealer.id %}">{{dealer.full_name}}</a></td>
+          <td>{{ dealer.id }}</td>
+          <td>{{ dealer.lat }}</td>
+          <td>{{ dealer.long }}</td>
+          <td>{{ dealer.short_name }}</td>
+          <td>{{ dealer.zip }}</td>
+          <td>{{ dealer.state }}</td>
+          <td>{{ dealer.st }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
     {% endif %}
   </body>
+  <script>
+    $(function () {
+      $('#table').bootstrapTable()
+    })
+  </script>
 </html>

@@ -75,11 +75,11 @@ def get_dealer_reviews_from_cf(**kwargs):
                     name=review['name'],
                     dealership=review['dealership'],
                     review=review['review'],
-                    purchase=review['purchase'],
-                    purchase_date=review['purchase_date'],
-                    car_make=review['car_make'],
-                    car_model=review['car_model'],
-                    car_year=review['car_year'],
+                    purchase=review.get('purchase', None),
+                    purchase_date=review.get('purchase_date', None),
+                    car_make=review.get('car_make', None),
+                    car_model=review.get('car_model', None),
+                    car_year=review.get('car_year', None),
                     sentiment=watson_response['sentiment']['document']['label']
                 )
                 reviews.append(review_obj)

@@ -45,8 +45,11 @@
       </form>
       {% endif %}
     </nav>
-    {% if reviews %}
-    <table>
+    {% if user.is_authenticated %}
+    <a href="{% url 'djangoapp:add_review' dealerId=dealerId %}">Add Review</a>
+    {% endif %} {% if reviews %}
+    <!--
+      <table class="table">
       <tr>
         <th>Dealership</th>
         <th>Name</th>
@@ -56,6 +59,7 @@
         <th>Car Make</th>
         <th>Car Model</th>
         <th>Car Year</th>
+        <th>ID</th>
         <th>Watson Sentiment</th>
       </tr>
       {% for review in reviews %}
@@ -73,6 +77,27 @@
       </tr>
       {% endfor %}
     </table>
+    -->
+    {% if dealerId %}
+    <h1>Reviews for dealer id {{dealerId}}</h1>
+    {% endif %}
+    <div class="card-columns">
+      {% for review in reviews %}
+      <div class="card">
+        <img class="card-img-left" src="{{MEDIA_URL}}/emoji/{{review.sentiment}}.png" />
+        <div class="card-body">
+          {% if review.purchase %}
+          <h5 class="card-title">{{review.car_model}}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">{{review.car_make}} {{review.purchase_year}}</h6>
+          {% endif %}
+          <p class="card-text">{{review.review}}</p>
+          <p class="card-text">- {{review.name}}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p>No reviews</p>
     {% endif %}
   </body>
 </html>
